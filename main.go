@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 
-	simplePB "github.com/sunsunskibiz/protobuf/gen/simple/v1"
-	mapPB "github.com/sunsunskibiz/protobuf/gen/map/v1"
+	"github.com/bufbuild/protovalidate-go"
+	mapv1 "github.com/sunsunskibiz/protobuf/gen/map/v1"
+	simplev1 "github.com/sunsunskibiz/protobuf/gen/simple/v1"
+	validatesimplev1 "github.com/sunsunskibiz/protobuf/gen/validatesimple/v1"
 )
 
-func doSimple() *simplePB.Simple {
-	return &simplePB.Simple{
+func doSimple() *simplev1.Simple {
+	return &simplev1.Simple{
 		Id:         1,
 		IsSimple:   true,
 		Name:       "Sun",
@@ -16,9 +18,9 @@ func doSimple() *simplePB.Simple {
 	}
 }
 
-func doMap() *mapPB.MapExample {
-	return &mapPB.MapExample{
-		Ids: map[string]*mapPB.IdWrapper{
+func doMap() *mapv1.MapExample {
+	return &mapv1.MapExample{
+		Ids: map[string]*mapv1.IdWrapper{
 			"1": {Id: 1},
 			"2": {Id: 2},
 			"3": {Id: 3},
@@ -26,7 +28,26 @@ func doMap() *mapPB.MapExample {
 	}
 }
 
+func doValidate() {
+	v, err := protovalidate.New()
+	if err != nil {
+		fmt.Println("failed to initialize validator:", err)
+	}
+
+	msg := validatesimplev1.Simple{
+		Id: 123, // Modify here to get validate failed
+	}
+
+	if err = v.Validate(&msg); err != nil {
+		fmt.Println("validation failed:", err)
+	} else {
+		fmt.Println("validation succeeded")
+	}
+}
+
 func main() {
 	fmt.Println(doSimple())
 	fmt.Println(doMap())
+	
+	doValidate()
 }
