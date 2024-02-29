@@ -10,6 +10,7 @@ import (
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	gatewayv1 "github.com/sunsunskibiz/protobuf/gen/gateway/v1"
+	grpcv1 "github.com/sunsunskibiz/protobuf/gen/grpc/v1"
 	mapv1 "github.com/sunsunskibiz/protobuf/gen/map/v1"
 	simplev1 "github.com/sunsunskibiz/protobuf/gen/simple/v1"
 	validatesimplev1 "github.com/sunsunskibiz/protobuf/gen/validatesimple/v1"
@@ -54,24 +55,6 @@ func doValidate() {
 }
 
 func doGateway() {
-	// Create a listener on TCP port
-	lis, err := net.Listen("tcp", ":8080")
-	if err != nil {
-		log.Fatalln("Failed to listen:", err)
-	}
-
-	// Create a gRPC server object
-	s := grpc.NewServer()
-
-	// Attach the Greeter service to the server
-	gatewayv1.RegisterGeeterServiceServer(s, &server{})
-
-	// Serve gRPC Server
-	log.Println("Serving gRPC on 0.0.0.0:8080")
-	go func() {
-		log.Fatal(s.Serve(lis))
-	}()
-
 	// Create a client connection to the gRPC server we just started
 	// This is where the gRPC-Gateway proxies the requests
 	conn, err := grpc.DialContext(
@@ -101,11 +84,36 @@ func doGateway() {
 	log.Fatalln(gwServer.ListenAndServe())
 }
 
+func doGRPC(registerServer func(s *grpc.Server)) {
+	// Create a listener on TCP port
+	lis, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		log.Fatalln("Failed to listen:", err)
+	}
+
+	// Create a gRPC server object
+	s := grpc.NewServer()
+
+	// Attach the Greeter service to the server
+	registerServer(s)
+
+	// Serve gRPC Server
+	log.Println("Serving gRPC on 0.0.0.0:8080")
+	go func() {
+		log.Fatal(s.Serve(lis))
+	}()
+}
+
 func main() {
 	fmt.Println(doSimple())
 	fmt.Println(doMap())
 
 	doValidate()
+
+	doGRPC(func(s *grpc.Server) {
+		gatewayv1.RegisterGeeterServiceServer(s, &server{})
+		grpcv1.RegisterEchoServiceServer(s, &grpcServer{})
+	})
 
 	doGateway()
 }
