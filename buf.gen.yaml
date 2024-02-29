@@ -20,4 +20,5 @@ plugins:
     out: gen
     opt: paths=source_relative
   - plugin: buf.build/grpc-ecosystem/openapiv2
-    out: gen
+    out: gen/openapiv2
+    opt: allow_merge=true,merge_file_name=protobuf
