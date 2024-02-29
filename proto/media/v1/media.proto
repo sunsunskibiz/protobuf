@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package media.v1;
+
+import "google/api/annotations.proto";
+import "google/api/httpbody.proto";
+
+service MediaService {
+  rpc Image(ImageRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {
+      post : "/v1/image"
+      body : "*"
+    };
+  }
+}
+
+message ImageRequest { bytes file = 1; }

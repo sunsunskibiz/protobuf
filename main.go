@@ -87,10 +87,16 @@ func main() {
 	doGRPC(func(s *grpc.Server) {
 		grpc.ServiceRegistrar(s).RegisterService(&gatewayv1.GeeterService_ServiceDesc, gatewayv1.GeeterServiceServer(&server.Server{}))
 		grpcv1.RegisterEchoServiceServer(s, &server.GRPCServer{})
+		mediav1.RegisterMediaServiceServer(s, &server.MediaServer{})
 	})
 
 	doGateway(func(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
 		err := gatewayv1.RegisterGeeterServiceHandler(context.Background(), mux, conn)
+		if err != nil {
+			return err
+		}
+
+		err = mediav1.RegisterMediaServiceHandler(ctx, mux, conn)
 		if err != nil {
 			return err
 		}
