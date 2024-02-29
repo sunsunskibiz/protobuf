@@ -97,6 +97,9 @@ func doGRPC(registerServer func(s *grpc.Server)) {
 	// Attach the Greeter service to the server
 	registerServer(s)
 
+	// Register reflaction
+	reflection.Register(s)
+
 	// Serve gRPC Server
 	log.Println("Serving gRPC on 0.0.0.0:8080")
 	go func() {
