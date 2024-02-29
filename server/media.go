@@ -32,3 +32,21 @@ func (s *MediaServer) Image(ctx context.Context, request *mediav1.ImageRequest) 
 		Data:        img,
 	}, nil
 }
+
+func (s *MediaServer) Csv(ctx context.Context, request *mediav1.CsvRequest) (*httpbody.HttpBody, error) {
+	filename := "Pokemon.csv"
+	err := grpc.SendHeader(ctx, metadata.Pairs("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename)))
+	if err != nil {
+		return nil, err
+	}
+
+	csv, err := base64.StdEncoding.DecodeString(string(request.File))
+	if err != nil {
+		return nil, err
+	}
+
+	return &httpbody.HttpBody{
+		ContentType: "text/csv",
+		Data:        csv,
+	}, nil
+}

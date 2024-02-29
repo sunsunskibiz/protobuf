@@ -29,7 +29,7 @@ func getFormFile(r *http.Request, name string) ([]byte, error) {
 }
 
 func createRequestFromMultiPart(r *http.Request) (*http.Request, error) {
-	dataBytes, err := getFormFile(r, "file") // TODO: Maybe must change, find in fulfillment repo
+	dataBytes, err := getFormFile(r, "file")
 	if err != nil {
 		fmt.Printf("%v", err)
 		return nil, err
@@ -54,7 +54,7 @@ func createRequestFromMultiPart(r *http.Request) (*http.Request, error) {
 
 func customizeMiddleware(otherHandler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Contains(r.Header.Get("Content-Type"), "multipart/form-data") { // TODO: Change to switch case
+		if strings.Contains(r.Header.Get("Content-Type"), "multipart/form-data") {
 			newR, err := createRequestFromMultiPart(r)
 			if err != nil {
 				w.WriteHeader(400)

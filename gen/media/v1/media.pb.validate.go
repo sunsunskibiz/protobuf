@@ -135,3 +135,104 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ImageRequestValidationError{}
+
+// Validate checks the field values on CsvRequest with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *CsvRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CsvRequest with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in CsvRequestMultiError, or
+// nil if none found.
+func (m *CsvRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CsvRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for File
+
+	if len(errors) > 0 {
+		return CsvRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CsvRequestMultiError is an error wrapping multiple validation errors
+// returned by CsvRequest.ValidateAll() if the designated constraints aren't met.
+type CsvRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CsvRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CsvRequestMultiError) AllErrors() []error { return m }
+
+// CsvRequestValidationError is the validation error returned by
+// CsvRequest.Validate if the designated constraints aren't met.
+type CsvRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CsvRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CsvRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CsvRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CsvRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CsvRequestValidationError) ErrorName() string { return "CsvRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e CsvRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCsvRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CsvRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CsvRequestValidationError{}

@@ -12,6 +12,14 @@ service MediaService {
       body : "*"
     };
   }
+  rpc Csv(CsvRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {
+      post : "/v1/csv"
+      body : "*"
+    };
+  }
 }
 
 message ImageRequest { bytes file = 1; }
+
+message CsvRequest { bytes file = 1; }

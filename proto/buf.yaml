@@ -12,3 +12,5 @@ lint:
   ignore_only:
     RPC_RESPONSE_STANDARD_NAME:
       - "media/v1/media.proto"
+    RPC_REQUEST_RESPONSE_UNIQUE:
+      - "media/v1/media.proto"

@@ -22,6 +22,38 @@
     "application/json"
   ],
   "paths": {
+    "/v1/csv": {
+      "post": {
+        "operationId": "MediaService_Csv",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CsvRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MediaService"
+        ]
+      }
+    },
     "/v1/image": {
       "post": {
         "operationId": "MediaService_Image",
@@ -138,6 +170,15 @@
             "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "v1CsvRequest": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },
