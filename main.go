@@ -5,17 +5,18 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	gatewayv1 "github.com/sunsunskibiz/protobuf/gen/gateway/v1"
 	grpcv1 "github.com/sunsunskibiz/protobuf/gen/grpc/v1"
 	mapv1 "github.com/sunsunskibiz/protobuf/gen/map/v1"
+	mediav1 "github.com/sunsunskibiz/protobuf/gen/media/v1"
 	simplev1 "github.com/sunsunskibiz/protobuf/gen/simple/v1"
 	validatesimplev1 "github.com/sunsunskibiz/protobuf/gen/validatesimple/v1"
+	"github.com/sunsunskibiz/protobuf/server"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection"
 )
 
 func doSimple() *simplev1.Simple {
@@ -54,39 +55,9 @@ func doValidate() {
 	}
 }
 
-func doGateway() {
-	// Create a client connection to the gRPC server we just started
-	// This is where the gRPC-Gateway proxies the requests
-	conn, err := grpc.DialContext(
-		context.Background(),
-		"0.0.0.0:8080",
-		grpc.WithBlock(),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-	if err != nil {
-		log.Fatalln("Failed to dial server:", err)
-	}
-
-	gwmux := runtime.NewServeMux()
-
-	// Register Greeter
-	err = gatewayv1.RegisterGeeterServiceHandler(context.Background(), gwmux, conn)
-	if err != nil {
-		log.Fatalln("Failed to register gateway:", err)
-	}
-
-	gwServer := http.Server{
-		Addr:    ":8090",
-		Handler: gwmux,
-	}
-
-	log.Println("Serving gRPC-Gateway on http://0.0.0.0:8090")
-	log.Fatalln(gwServer.ListenAndServe())
-}
-
 func doGRPC(registerServer func(s *grpc.Server)) {
 	// Create a listener on TCP port
-	lis, err := net.Listen("tcp", ":8080")
+	lis, err := net.Listen("tcp", ":8090")
 	if err != nil {
 		log.Fatalln("Failed to listen:", err)
 	}
@@ -101,7 +72,7 @@ func doGRPC(registerServer func(s *grpc.Server)) {
 	reflection.Register(s)
 
 	// Serve gRPC Server
-	log.Println("Serving gRPC on 0.0.0.0:8080")
+	log.Println("Serving gRPC on 0.0.0.0:8090")
 	go func() {
 		log.Fatal(s.Serve(lis))
 	}()
@@ -114,9 +85,16 @@ func main() {
 	doValidate()
 
 	doGRPC(func(s *grpc.Server) {
-		gatewayv1.RegisterGeeterServiceServer(s, &server{})
-		grpcv1.RegisterEchoServiceServer(s, &grpcServer{})
+		grpc.ServiceRegistrar(s).RegisterService(&gatewayv1.GeeterService_ServiceDesc, gatewayv1.GeeterServiceServer(&server.Server{}))
+		grpcv1.RegisterEchoServiceServer(s, &server.GRPCServer{})
 	})
 
-	doGateway()
+	doGateway(func(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+		err := gatewayv1.RegisterGeeterServiceHandler(context.Background(), mux, conn)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 }

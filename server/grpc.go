@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -6,11 +6,11 @@ import (
 	grpcv1 "github.com/sunsunskibiz/protobuf/gen/grpc/v1"
 )
 
-type grpcServer struct {
+type GRPCServer struct {
 	grpcv1.UnimplementedEchoServiceServer
 }
 
-func (s *grpcServer)  Echo(ctx context.Context, request *grpcv1.EchoRequest) (*grpcv1.EchoResponse, error) {
+func (s *GRPCServer)  Echo(ctx context.Context, request *grpcv1.EchoRequest) (*grpcv1.EchoResponse, error) {
 	return &grpcv1.EchoResponse{
 		Message: "Hello " + request.GetName(),
 	}, nil
